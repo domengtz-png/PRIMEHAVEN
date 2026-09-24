@@ -1,0 +1,115 @@
+require("dotenv").config();
+const express = require("express");
+const path = require("path");
+
+const app = express();
+app.use(express.json());
+app.use(express.static(__dirname));
+
+const PORT = process.env.PORT || 3000;
+const BASE_URL = process.env.MPESA_ENV === "production"
+  ? "https://api.safaricom.co.ke"
+  : "https://sandbox.safaricom.co.ke";
+
+function normalizePhone(phone) {
+  phone = String(phone).replace(/\s+/g, "");
+  if (phone.startsWith("+254")) return phone.slice(1);
+  if (phone.startsWith("0")) return "254" + phone.slice(1);
+  return phone;
+}
+
+function timestamp() {
+  const d = new Date();
+  const parts = [
+    d.getFullYear(),
+    String(d.getMonth()+1).padStart(2,"0"),
+    String(d.getDate()).padStart(2,"0"),
+    String(d.getHours()).padStart(2,"0"),
+    String(d.getMinutes()).padStart(2,"0"),
+    String(d.getSeconds()).padStart(2,"0")
+  ];
+  return parts.join("");
+}
+
+async function getAccessToken() {
+  const credentials = Buffer.from(
+    `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`
+  ).toString("base64");
+
+  const response = await fetch(
+    `${BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
+    { headers: { Authorization: `Basic ${credentials}` } }
+  );
+
+  if (!response.ok) throw new Error("Could not obtain M-Pesa access token");
+  const data = await response.json();
+  return data.access_token;
+}
+
+app.post("/api/mpesa/stkpush", async (req, res) => {
+  try {
+    const { phone, amount } = req.body;
+    const customerPhone = normalizePhone(phone);
+    const numericAmount = Math.round(Number(amount));
+
+    if (!/^2547\d{8}$/.test(customerPhone)) {
+      return res.status(400).json({ error: "Invalid Kenyan phone number." });
+    }
+    if (!Number.isInteger(numericAmount) || numericAmount < 1) {
+      return res.status(400).json({ error: "Invalid payment amount." });
+    }
+
+    const shortcode = process.env.MPESA_SHORTCODE;
+    const passkey = process.env.MPESA_PASSKEY;
+    const callbackUrl = process.env.MPESA_CALLBACK_URL;
+    const time = timestamp();
+    const password = Buffer.from(shortcode + passkey + time).toString("base64");
+    const token = await getAccessToken();
+
+    const payload = {
+      BusinessShortCode: shortcode,
+      Password: password,
+      Timestamp: time,
+      TransactionType: process.env.MPESA_TRANSACTION_TYPE || "CustomerPayBillOnline",
+      Amount: numericAmount,
+      PartyA: customerPhone,
+      PartyB: shortcode,
+      PhoneNumber: customerPhone,
+      CallBackURL: callbackUrl,
+      AccountReference: "PrimeHaven",
+      TransactionDesc: "PrimeHaven order"
+    };
+
+    const response = await fetch(`${BASE_URL}/mpesa/stkpush/v1/processrequest`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json(data);
+
+    res.json({
+      message: data.CustomerMessage || "Payment prompt sent. Check your phone.",
+      checkoutRequestId: data.CheckoutRequestID,
+      raw: data
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Payment request failed. Check server configuration." });
+  }
+});
+
+app.post("/api/mpesa/callback", (req, res) => {
+  // IMPORTANT: In production, validate and store the callback in your database.
+  // Do not mark an order paid merely because the STK request was accepted.
+  console.log("M-Pesa callback:", JSON.stringify(req.body, null, 2));
+  res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+});
+
+app.listen(PORT, () => {
+  console.log(`PrimeHaven running at http://localhost:${PORT}`);
+});
