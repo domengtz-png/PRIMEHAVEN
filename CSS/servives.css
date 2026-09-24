@@ -1,0 +1,24 @@
+#primem{
+font-weight: bolder;
+font-style: italic;
+}
+
+.main{
+
+    color: brown;
+}
+
+#vip{
+    background-color: rgb(162, 162, 231);
+    margin: 60px;
+    padding: 30px;
+    border-radius: 10px;
+}
+
+#vip button{
+    background-color: blue;
+    border-radius: 10px;
+}
+#vip :hover{
+    background-color: rgba(44, 2, 35, 0.603);
+}

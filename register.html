@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register page</title>
+    <link rel="stylesheet" href="CSS/register.css">
+</head>
+<body>
+
+    <form action="">
+
+        <!--marque for moving behaviour of the title-->
+
+<legend> Join Us and Start Your Journey Today!</legend>
+<br><br>
+
+<label for="fname">Firstname :</label>
+<input type="text" id="firstname" placeholder="e.g John" required>
+<br><br>
+
+<label for="sname">Surname :</label>
+<input type="text" id="sname" placeholder="e.g Doe" required>
+<br><br>
+
+<label for="email">Email :</label>
+<input type="email" id="email" placeholder="e.g abc@gmail.com" required>
+<br><br>
+
+<label for="pwd">Password :</label>
+<input type="password" id="pwd" placeholder="Type password" required>
+<br><br>
+
+<label for="height">Enter Height :</label>
+<input type="number" id="height" placeholder="e.g 3{in cm} " required>
+<br><br>
+
+<label for="yob">Year of birth :</label>
+<input type="date" id="yob" required>
+<br><br>
+
+<label for="dt">Date and Time :</label>
+<input type="datetime-local" id="dt" required>
+<br><br>
+
+<label for="upload">Upload image</label>
+<input type="file" id="upload" required>
+<br><br>
+
+<!--Dropdown for selecting-->
+<label for="yos">Select year of study</label>
+<select name="" id="yos">
+
+    <option value=""disabled>--Select One--</option>
+<option value="">Year 1</option>
+<option value="" disabled>Year 2</option>
+<option value="">Year 3</option>
+<option value="">Year 4</option>
+
+</select>
+<!--End of dropdown--->
+<br><br>
+
+
+<!--Radio Button  for selecting 1 answer--->
+<label>Choose favorite football team :</label><br>
+
+<input type="radio" id="man u" name="team">
+<label for="manchester united">Manchester United</label> <br>
+
+<input type="radio" id="arsenal" name="team"> 
+<label for="arsenal">Arsenal</label> <br>
+
+<input type="radio" id="chelsea" name="team">
+<label for="chelsea">Chelsea</label> <br><br>
+
+
+<!--Checkbox for selecting more than 1 answer-->
+<label for="">Select Language</label> <br>
+
+<input type="checkbox" id="Kiswahili" name="Kiswahili">
+<label for="kiswahili">Kiswahili</label> <br>
+
+<input type="checkbox" id="English" name="english">
+<label for="english">English</label><br>
+
+<input type="checkbox" id="German" name="german">
+<label for="german">German</label><br><br>
+
+<label for="message">Message</label> <br>
+<textarea name="" id="" cols="40" rows="10"></textarea>
+<br><br>
+
+
+<button type="submit">Register</button>
+
+    </form>
+
+
+    
+</body>
+</html>
